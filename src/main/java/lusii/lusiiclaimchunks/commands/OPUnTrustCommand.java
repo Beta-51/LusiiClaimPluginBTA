@@ -25,7 +25,7 @@ public class OPUnTrustCommand extends Command {
 		}
 		List<String> Users = new ArrayList<>(LusiiClaimChunks.map.get(intPair));
 		Users.remove(args[0]);
-		LusiiClaimChunks.map.remove(intPair, Users);
+		LusiiClaimChunks.map.put(intPair, Users);
 		sender.sendMessage("§ePlayer §r"+ args[0] + " §euntrusted via Operator.");
 		LusiiClaimChunks.saveHashMap();
 		return true;

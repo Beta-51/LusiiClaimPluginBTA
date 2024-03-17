@@ -32,7 +32,7 @@ public class UnTrustCommand extends Command {
 		} else {
 			List<String> Users = new ArrayList<>(LusiiClaimChunks.map.get(intPair));
 			Users.remove(player);
-			LusiiClaimChunks.map.remove(intPair, Users);
+			LusiiClaimChunks.map.put(intPair, Users);
 			sender.sendMessage("§3Player §r" + player + " §3untrusted.");
 			LusiiClaimChunks.saveHashMap();
 			return true;
