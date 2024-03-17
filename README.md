@@ -1,2 +1,1 @@
-# LusiiClaimPluginBTA
-A plugin for claiming chunks in BTA! 7.1 prerelease a1
+A claim plugin(mod) for the Better than Adventure! mod for b1.7.3!

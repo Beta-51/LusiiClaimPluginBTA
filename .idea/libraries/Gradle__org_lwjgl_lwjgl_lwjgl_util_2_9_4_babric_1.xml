@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Gradle: org.lwjgl.lwjgl:lwjgl_util:2.9.4-babric.1" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="org.lwjgl.lwjgl" artifactId="lwjgl_util" version="2.9.4-babric.1" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl_util/2.9.4-babric.1/985500842d01f9325533c86b02a3bc152cbff601/lwjgl_util-2.9.4-babric.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl_util/2.9.4-babric.1/7630480729490930341d9758d502a97a77461731/lwjgl_util-2.9.4-babric.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl_util/2.9.4-babric.1/ea4525da9f42cdadeb40fc37a6ea4487c617e56e/lwjgl_util-2.9.4-babric.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

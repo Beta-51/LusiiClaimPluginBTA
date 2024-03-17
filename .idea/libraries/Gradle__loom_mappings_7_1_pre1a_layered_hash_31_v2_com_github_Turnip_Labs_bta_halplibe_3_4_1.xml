@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: loom_mappings_7_1_pre1a_layered_hash_31_v2.com.github.Turnip-Labs:bta-halplibe:3.4.1" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="loom_mappings_7_1_pre1a_layered_hash_31_v2.com.github.Turnip-Labs" artifactId="bta-halplibe" version="3.4.1" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/loom_mappings_7_1_pre1a_layered_hash_31_v2/com/github/Turnip-Labs/bta-halplibe/3.4.1/bta-halplibe-3.4.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/loom_mappings_7_1_pre1a_layered_hash_31_v2/com/github/Turnip-Labs/bta-halplibe/3.4.1/bta-halplibe-3.4.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

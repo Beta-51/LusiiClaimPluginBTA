@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: loom_mappings_7_1_pre1a_layered_hash_31_v2.ModMenu:ModMenu:2.0.3" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="loom_mappings_7_1_pre1a_layered_hash_31_v2.ModMenu" artifactId="ModMenu" version="2.0.3" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/loom_mappings_7_1_pre1a_layered_hash_31_v2/ModMenu/ModMenu/2.0.3/ModMenu-2.0.3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/loom_mappings_7_1_pre1a_layered_hash_31_v2/ModMenu/ModMenu/2.0.3/ModMenu-2.0.3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

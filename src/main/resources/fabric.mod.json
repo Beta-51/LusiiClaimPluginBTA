@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "lusiiclaimchunk",
+  "version": "${version}",
+
+  "name": "Claim Chunks",
+  "description": "Claim chunks to prevent griefs",
+  "authors": [
+    "Lusii"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": ""
+  },
+
+	"icon": "icon.png",
+  "license": "CC0-1.0",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+			"lusii.lusiiclaimchunks.LusiiClaimChunks"
+    ],
+		"beforeGameStart": [
+			"lusii.lusiiclaimchunks.LusiiClaimChunks"
+		],
+		"afterGameStart": [
+			"lusii.lusiiclaimchunks.LusiiClaimChunks"
+		],
+		"recipesReady": [
+			"lusii.lusiiclaimchunks.LusiiClaimChunks"
+		]
+	},
+  "mixins": [
+      "lusiiclaimchunk.mixins.json"
+  ],
+
+  "depends": {
+		"minecraft": "~7.1-beta.1",
+    "fabricloader": ">=0.13.3"
+  },
+  "suggests": {
+  }
+}
