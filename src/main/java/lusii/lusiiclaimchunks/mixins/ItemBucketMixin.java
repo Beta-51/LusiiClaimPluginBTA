@@ -71,7 +71,7 @@ public class ItemBucketMixin extends Item {
 					}
 				}
 			}
-			if (!world.canMineBlock(player, x, y, z) || LusiiClaimChunks.map.get(new LusiiClaimChunks.IntPair(cx, cz)) != null && !allowed) {
+			if (!world.canMineBlock(player, x, y, z) || LusiiClaimChunks.map.get(new LusiiClaimChunks.IntPair(cx, cz)) != null && !allowed && player.dimension == 0) {
 				return stack;
 			} else if (this.idToPlace < 0) {
 				return new ItemStack(Item.bucket);

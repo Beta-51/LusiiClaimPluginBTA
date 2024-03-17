@@ -70,7 +70,7 @@ public class ExplosionMixin {
 
 							if (f1 > 0.0F) {
 								LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(worldObj.getChunkFromBlockCoords(j4,l4).xPosition,worldObj.getChunkFromBlockCoords(j4,l4).zPosition);
-								if (LusiiClaimChunks.map.get(intPair) == null) {
+								if (LusiiClaimChunks.map.get(intPair) == null || this.exploder.world.dimension.id != 0) {
 									this.destroyedBlockPositions.add(new ChunkPosition(j4, k4, l4));
 								}
 							}

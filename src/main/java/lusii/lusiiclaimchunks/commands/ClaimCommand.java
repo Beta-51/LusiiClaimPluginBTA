@@ -18,7 +18,10 @@ public class ClaimCommand extends Command {
 			sender.sendMessage("§eInsufficient funds!");
 			return true;
 		}
-
+		if (sender.getPlayer().dimension != 0) {
+			sender.sendMessage("§eOverworld only!");
+			return true;
+		}
 
 		int cx = sender.getPlayer().chunkCoordX;
 		int cz = sender.getPlayer().chunkCoordZ;

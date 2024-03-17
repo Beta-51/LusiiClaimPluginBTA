@@ -64,7 +64,7 @@ public class ItemBucketEmptyMixin extends Item {
 					}
 				}
 
-				if (!world.canMineBlock(entityplayer, i, j, k) || LusiiClaimChunks.map.get(new LusiiClaimChunks.IntPair(cx, cz)) != null && !allowed) {
+				if (!world.canMineBlock(entityplayer, i, j, k) || LusiiClaimChunks.map.get(new LusiiClaimChunks.IntPair(cx, cz)) != null && !allowed && entityplayer.dimension == 0) {
 					return itemstack;
 				}
 

@@ -69,13 +69,15 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 		Chunk chunkNew = this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(newPosXClaimChunks, newPosZClaimChunks);
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(chunk.xPosition,chunk.zPosition);
 		LusiiClaimChunks.IntPair intPairNew = new LusiiClaimChunks.IntPair(chunkNew.xPosition,chunkNew.zPosition);
-		if (LusiiClaimChunks.map.get(intPair) == null && LusiiClaimChunks.map.get(intPairNew) != null && packet.moving && this.hasMoved) {
-			this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.map.get(intPairNew).get(0) + "'s §3claim.");
-		} else if (LusiiClaimChunks.map.get(intPair) != null && LusiiClaimChunks.map.get(intPairNew) == null && packet.moving && this.hasMoved) {
-			this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §dWilderness§3.");
-		} else if (LusiiClaimChunks.map.get(intPair) != null && LusiiClaimChunks.map.get(intPairNew) != null && packet.moving && this.hasMoved) {
-			if (!Objects.equals(LusiiClaimChunks.map.get(intPair).get(0), LusiiClaimChunks.map.get(intPairNew).get(0))) {
+		if (this.playerEntity.dimension == 0){
+			if (LusiiClaimChunks.map.get(intPair) == null && LusiiClaimChunks.map.get(intPairNew) != null && packet.moving && this.hasMoved) {
 				this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.map.get(intPairNew).get(0) + "'s §3claim.");
+			} else if (LusiiClaimChunks.map.get(intPair) != null && LusiiClaimChunks.map.get(intPairNew) == null && packet.moving && this.hasMoved) {
+				this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §dWilderness§3.");
+			} else if (LusiiClaimChunks.map.get(intPair) != null && LusiiClaimChunks.map.get(intPairNew) != null && packet.moving && this.hasMoved) {
+				if (!Objects.equals(LusiiClaimChunks.map.get(intPair).get(0), LusiiClaimChunks.map.get(intPairNew).get(0))) {
+					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.map.get(intPairNew).get(0) + "'s §3claim.");
+				}
 			}
 		}
 	}
