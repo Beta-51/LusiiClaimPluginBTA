@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import turniplabs.halplibe.util.TomlConfigHandler;
 import turniplabs.halplibe.util.toml.Toml;
 
+import javax.annotation.Nullable;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,7 +21,8 @@ import java.util.List;
 public class LusiiClaimChunks implements ModInitializer {
     public static final String MOD_ID = "lusiiclaimchunk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	public static HashMap<IntPair, List<String>> map = new HashMap<>();
+	private static HashMap<IntPair, List<String>> chunkTrustedMap = new HashMap<>();
+	private static HashMap<String, Integer> claimedChunksMap = new HashMap<>();
 
 	public static final TomlConfigHandler CONFIG;
 	static {
@@ -39,28 +40,67 @@ public class LusiiClaimChunks implements ModInitializer {
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("LusiiChunksClaim.ser"))) {
 			HashMap<IntPair, List<String>> reopenedMap = (HashMap<IntPair, List<String>>) ois.readObject();
 
-			List<String> googy = new ArrayList<>(Collections.singletonList("tracks"));
-			googy.add("arguoehapoe");
-
-			map = reopenedMap;
+			chunkTrustedMap = reopenedMap;
 			System.out.println("LusiiChunksClaim reopened from disk:");
 			System.out.println(reopenedMap);
 		} catch (IOException | ClassNotFoundException ignored) {
-
 		}
         LOGGER.info("LusiiClaimChunks initialized.");
     }
 
-	public static void saveHashMap() {
+	protected static void saveHashMap() {
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("LusiiChunksClaim.ser"))) {
-			oos.writeObject(map);
+			oos.writeObject(chunkTrustedMap);
 			//System.out.println("HashMap saved to disk.");
 		} catch (IOException ignored) {
 			LOGGER.warn("Chunk claims failed to save to disk!");
 		}
 	}
-
-
+	@Nullable
+	public static List<String> getTrustedPlayersInChunk(IntPair chunkCoords){
+		return chunkTrustedMap.get(chunkCoords);
+	}
+	public static void addTrustedPlayerToChunk(IntPair chunkCoords, String username){
+		chunkTrustedMap.putIfAbsent(chunkCoords, new ArrayList<>());
+		if (!chunkTrustedMap.get(chunkCoords).contains(username)){
+			chunkTrustedMap.get(chunkCoords).add(username);
+		}
+		LusiiClaimChunks.saveHashMap();
+	}
+	public static void setOwnerToChunk(IntPair chunkCoords, String username){
+		chunkTrustedMap.putIfAbsent(chunkCoords, new ArrayList<>());
+		if (chunkTrustedMap.get(chunkCoords).contains(username)){
+			chunkTrustedMap.get(chunkCoords).remove(username);
+			chunkTrustedMap.get(chunkCoords).add(0, username);
+		} else {
+			chunkTrustedMap.get(chunkCoords).add(0, username);
+		}
+	}
+	public static void removedPlayerFromChunk(IntPair chunkCoords, String username){
+		if (!chunkTrustedMap.containsKey(chunkCoords)) return;
+        chunkTrustedMap.get(chunkCoords).remove(username);
+		LusiiClaimChunks.saveHashMap();
+	}
+	public static void deleteClaim(IntPair chunkCoords){
+		chunkTrustedMap.remove(chunkCoords);
+		LusiiClaimChunks.saveHashMap();
+	}
+	public static boolean isPlayerTrusted(IntPair chunkCoords, String username){
+		if (isChunkClaimed(chunkCoords)){
+			List<String> trustedNames = getTrustedPlayersInChunk(chunkCoords);
+			return trustedNames.contains(username);
+		}
+		return false;
+	}
+	public static boolean isPlayerOwner(IntPair chunkCoords, String username){
+		if (isChunkClaimed(chunkCoords)){
+			return getTrustedPlayersInChunk(chunkCoords).get(0).equals(username);
+		}
+		return false;
+	}
+	public static boolean isChunkClaimed(IntPair chunkCoords){
+		return chunkTrustedMap.containsKey(chunkCoords);
+	}
 
 
 	public static class IntPair implements Serializable {

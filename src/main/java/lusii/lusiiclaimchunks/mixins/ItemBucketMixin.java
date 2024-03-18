@@ -31,18 +31,9 @@ public class ItemBucketMixin extends Item {
 			Chunk chunk = world.getChunkFromBlockCoords(i,k);
 			int cx = chunk.xPosition;
 			int cz = chunk.zPosition;
-			boolean allowed = false;
-			LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(cx,cz);
-			if (LusiiClaimChunks.map.get(intPair) != null) {
-				for (String name : LusiiClaimChunks.map.get(intPair)) {
-					if (entityplayer.username.equals(name)) {
-						allowed = true;
-						break;
-					}
-				}
-				if (!allowed && entityplayer.dimension == 0){
-					cir.setReturnValue(itemstack);
-				}
+            LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(cx,cz);
+			if (entityplayer.dimension == 0 && LusiiClaimChunks.isChunkClaimed(intPair) && !LusiiClaimChunks.isPlayerTrusted(intPair, entityplayer.username)) {
+				cir.setReturnValue(itemstack);
 			}
 		}
 	}

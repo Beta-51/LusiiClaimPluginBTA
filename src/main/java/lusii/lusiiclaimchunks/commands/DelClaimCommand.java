@@ -5,8 +5,6 @@ import net.minecraft.core.net.command.Command;
 import net.minecraft.core.net.command.CommandHandler;
 import net.minecraft.core.net.command.CommandSender;
 
-import java.util.Objects;
-
 public class DelClaimCommand extends Command {
 	public DelClaimCommand() {
 		super("delclaim","unclaim");
@@ -17,18 +15,16 @@ public class DelClaimCommand extends Command {
 		int cz = sender.getPlayer().chunkCoordZ;
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(cx,cz);
 		String username = sender.getPlayer().username;
-		if (LusiiClaimChunks.map.get(intPair) == null) {
+		if (!LusiiClaimChunks.isChunkClaimed(intPair)) {
 			sender.sendMessage("§3No one owns this chunk!");
 			return true;
 		}
-		if (!Objects.equals(LusiiClaimChunks.map.get(new LusiiClaimChunks.IntPair(cx, cz)).get(0), username)) {
+		if (!LusiiClaimChunks.getTrustedPlayersInChunk(new LusiiClaimChunks.IntPair(cx, cz)).get(0).equals(username)) {
 			sender.sendMessage("§3You do not own this chunk!");
-			return true;
-		} else {
-			LusiiClaimChunks.map.remove(intPair);
-			LusiiClaimChunks.saveHashMap();
-			return true;
-		}
+        } else {
+			LusiiClaimChunks.deleteClaim(intPair);
+        }
+        return true;
     }
 //
 	public boolean opRequired(String[] args) {

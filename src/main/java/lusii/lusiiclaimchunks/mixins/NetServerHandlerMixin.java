@@ -21,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
-
 import static java.lang.Math.floor;
 
 @Mixin(value = NetServerHandler.class,remap = false,priority = 0)
@@ -45,13 +43,13 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(chunk.xPosition,chunk.zPosition);
 		LusiiClaimChunks.IntPair intPairNew = new LusiiClaimChunks.IntPair(chunkNew.xPosition,chunkNew.zPosition);
 		if (this.playerEntity.dimension == 0){
-			if (LusiiClaimChunks.map.get(intPair) == null && LusiiClaimChunks.map.get(intPairNew) != null && packet.moving && this.hasMoved) {
-				this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.map.get(intPairNew).get(0) + "'s §3claim.");
-			} else if (LusiiClaimChunks.map.get(intPair) != null && LusiiClaimChunks.map.get(intPairNew) == null && packet.moving && this.hasMoved) {
+			if (LusiiClaimChunks.getTrustedPlayersInChunk(intPair) == null && LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew) != null && packet.moving && this.hasMoved) {
+				this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew).get(0) + "'s §3claim.");
+			} else if (LusiiClaimChunks.getTrustedPlayersInChunk(intPair) != null && LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew) == null && packet.moving && this.hasMoved) {
 				this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §dWilderness§3.");
-			} else if (LusiiClaimChunks.map.get(intPair) != null && LusiiClaimChunks.map.get(intPairNew) != null && packet.moving && this.hasMoved) {
-				if (!Objects.equals(LusiiClaimChunks.map.get(intPair).get(0), LusiiClaimChunks.map.get(intPairNew).get(0))) {
-					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.map.get(intPairNew).get(0) + "'s §3claim.");
+			} else if (LusiiClaimChunks.getTrustedPlayersInChunk(intPair) != null && LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew) != null && packet.moving && this.hasMoved) {
+				if (!LusiiClaimChunks.getTrustedPlayersInChunk(intPair).get(0).equals(LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew).get(0))) {
+					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew).get(0) + "'s §3claim.");
 				}
 			}
 		}
@@ -59,105 +57,37 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 
 	@Inject(method = "handleBlockDig", at = @At("HEAD"), cancellable = true)
 	public void handleBlockDigClaimChunk(Packet14BlockDig packet, CallbackInfo ci) {
-		int bx = packet.xPosition;
-		int bz = packet.zPosition;
-		boolean allowed = false;
-		WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
+        WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
 		Block block = worldserver.getBlock(packet.xPosition,packet.yPosition,packet.zPosition);
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).zPosition);
 		if (block != null){
 			if (this.playerEntity.dimension == 0 & packet.status == 2 || this.playerEntity.dimension == 0 & (this.playerEntity.gamemode == Gamemode.creative || this.playerEntity.getCurrentPlayerStrVsBlock(block) >= 1.0) & packet.status == 0) {
-				if (LusiiClaimChunks.map.get(intPair) != null) {
-					for (String name : LusiiClaimChunks.map.get(intPair)) {
-						if (this.playerEntity.username.equals(name)) {
-							allowed = true;
-							break;
-						}
-					}
-					if (allowed) {
-
-					} else {
-						this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
-						this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(packet.xPosition, packet.yPosition, packet.zPosition, worldserver));
-						ci.cancel();
-						return;
-					}
-				}
+				if (!LusiiClaimChunks.isPlayerTrusted(intPair, playerEntity.username) && LusiiClaimChunks.isChunkClaimed(intPair)) {
+					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
+					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(packet.xPosition, packet.yPosition, packet.zPosition, worldserver));
+					ci.cancel();
+                }
 			}
 		}
 	}
 	@Inject(method = "handlePlace", at = @At("HEAD"), cancellable = true)
 	public void handlePlaceChunkClaim(Packet15Place packet, CallbackInfo ci) {
-		int bx = packet.xPosition;
-		int bz = packet.zPosition;
-
-
-		int x1 = packet.xPosition;
-		int y1 = packet.yPosition;
-		int z1 = packet.zPosition;
+        int x = packet.xPosition;
+		int y = packet.yPosition;
+		int z = packet.zPosition;
 		Direction direction = packet.direction;
-		x1 += direction.getOffsetX();
-		y1 += direction.getOffsetY();
-		z1 += direction.getOffsetZ();
+		x += direction.getOffsetX();
+		y += direction.getOffsetY();
+		z += direction.getOffsetZ();
 
-		boolean allowed = false;
-		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).zPosition);
-		LusiiClaimChunks.IntPair intPair2 = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x1,z1).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x1,z1).zPosition);
-		if (this.playerEntity.dimension == 0) {
-			if (LusiiClaimChunks.map.get(intPair) != null) {
-				for (String name : LusiiClaimChunks.map.get(intPair)) {
-					if (this.playerEntity.username.equals(name)) {
-						allowed = true;
-						break;
-					}
-				} if (allowed) {
-
-				} else {
-					int x = packet.xPosition;
-					int y = packet.yPosition;
-					int z = packet.zPosition;
-					Direction direction2 = packet.direction;
-					double xPlaced = packet.xPlaced;
-					double yPlaced = packet.yPlaced;
-					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
-					WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
-					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));
-					x += direction2.getOffsetX();
-					y += direction2.getOffsetY();
-					z += direction2.getOffsetZ();
-					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));
-					this.playerEntity.craftingInventory.updateInventory();
-					ci.cancel();
-					return;
-				}
-			} else if (LusiiClaimChunks.map.get(intPair2) != null) {
-				for (String name : LusiiClaimChunks.map.get(intPair2)) {
-					if (this.playerEntity.username.equals(name)) {
-						allowed = true;
-						break;
-					}
-				} if (allowed) {
-
-				} else {
-					int x = packet.xPosition;
-					int y = packet.yPosition;
-					int z = packet.zPosition;
-					Direction direction2 = packet.direction;
-					double xPlaced = packet.xPlaced;
-					double yPlaced = packet.yPlaced;
-					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
-					WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
-					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));
-					x += direction2.getOffsetX();
-					y += direction2.getOffsetY();
-					z += direction2.getOffsetZ();
-					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));
-					this.playerEntity.craftingInventory.updateInventory();
-					ci.cancel();
-					return;
-				}
-			}
-
+        LusiiClaimChunks.IntPair intPair2 = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).zPosition);
+		if (this.playerEntity.dimension == 0 && LusiiClaimChunks.isChunkClaimed(intPair2) && !LusiiClaimChunks.isPlayerTrusted(intPair2, playerEntity.username)) {
+			this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
+			WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
+			this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));
+			this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));
+			this.playerEntity.craftingInventory.updateInventory();
+			ci.cancel();
 		}
 	}
 
