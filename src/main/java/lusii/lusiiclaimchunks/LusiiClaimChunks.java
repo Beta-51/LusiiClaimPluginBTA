@@ -1,6 +1,9 @@
 package lusii.lusiiclaimchunks;
 
 import net.fabricmc.api.ModInitializer;
+import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Expression;
+import org.mariuszgromada.math.mxparser.License;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import turniplabs.halplibe.util.TomlConfigHandler;
@@ -28,12 +31,19 @@ public class LusiiClaimChunks implements ModInitializer {
 	static {
 		Toml toml = new Toml();
 		toml.addCategory("ClaimUtil");
-		toml.addEntry("ClaimUtil.cost", "Cost per chunk (In points)", 0);
+		toml.addEntry("ClaimUtil.cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", "100 * x");
 		CONFIG = new TomlConfigHandler(MOD_ID, toml);
-		cost = CONFIG.getInt("ClaimUtil.cost");
-	}
-	public static int cost;
+		costEquation = CONFIG.getString("ClaimUtil.cost");
 
+		License.iConfirmNonCommercialUse("UselessBullets");
+	}
+	private static String costEquation;
+
+	public static int getCost(String username){
+		Argument x = new Argument("x = " + claimedChunksMap.getOrDefault(username, 0));
+		Expression expression = new Expression(costEquation, x);
+		return (int) expression.calculate();
+	}
     @Override
     public void onInitialize() {
 
@@ -45,15 +55,26 @@ public class LusiiClaimChunks implements ModInitializer {
 			System.out.println(reopenedMap);
 		} catch (IOException | ClassNotFoundException ignored) {
 		}
+		calculateClaimedChunks();
         LOGGER.info("LusiiClaimChunks initialized.");
     }
 
 	protected static void saveHashMap() {
+		calculateClaimedChunks();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("LusiiChunksClaim.ser"))) {
 			oos.writeObject(chunkTrustedMap);
 			//System.out.println("HashMap saved to disk.");
 		} catch (IOException ignored) {
 			LOGGER.warn("Chunk claims failed to save to disk!");
+		}
+	}
+	protected static void calculateClaimedChunks(){
+		claimedChunksMap.clear();
+		for (IntPair pair : chunkTrustedMap.keySet()){
+			String owner = chunkTrustedMap.get(pair).get(0);
+			int val = claimedChunksMap.getOrDefault(owner, 0);
+			val++;
+			claimedChunksMap.put(owner, val);
 		}
 	}
 	@Nullable
@@ -75,6 +96,7 @@ public class LusiiClaimChunks implements ModInitializer {
 		} else {
 			chunkTrustedMap.get(chunkCoords).add(0, username);
 		}
+		LusiiClaimChunks.saveHashMap();
 	}
 	public static void removedPlayerFromChunk(IntPair chunkCoords, String username){
 		if (!chunkTrustedMap.containsKey(chunkCoords)) return;

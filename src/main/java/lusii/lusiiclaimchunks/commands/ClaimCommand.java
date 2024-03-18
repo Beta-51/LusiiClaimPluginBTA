@@ -11,8 +11,8 @@ public class ClaimCommand extends Command {
 	}
 //
 	public boolean execute(CommandHandler handler, CommandSender sender, String[] args) {
-		if (sender.getPlayer().score < LusiiClaimChunks.cost) {
-			sender.sendMessage("§eInsufficient funds!");
+		if (sender.getPlayer().score < LusiiClaimChunks.getCost(sender.getPlayer().username)) {
+			sender.sendMessage("§eInsufficient funds! Need atleast " + LusiiClaimChunks.getCost(sender.getPlayer().username) + " to claim!");
 			return true;
 		}
 		if (sender.getPlayer().dimension != 0) {
@@ -25,9 +25,9 @@ public class ClaimCommand extends Command {
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(cx,cz);
 		String username = sender.getPlayer().username;
 		if (LusiiClaimChunks.getTrustedPlayersInChunk(intPair) == null) {
+			sender.getPlayer().score -= LusiiClaimChunks.getCost(sender.getPlayer().username);
 			LusiiClaimChunks.addTrustedPlayerToChunk(intPair, username);
 			sender.sendMessage("§4Chunk claimed!");
-			sender.getPlayer().score -= LusiiClaimChunks.cost;
         } else {
 			sender.sendMessage("§eThis chunk is already claimed by §r" + LusiiClaimChunks.getTrustedPlayersInChunk(intPair).get(0) +"!");
         }
