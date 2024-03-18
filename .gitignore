@@ -3,3 +3,5 @@
 /.idea/
 /build/
 /.gradle/
+build/devlibs/LusiiClaimChunk-1.0.0-sources.jar
+build/devlibs/LusiiClaimChunk-1.0.0-dev.jar
