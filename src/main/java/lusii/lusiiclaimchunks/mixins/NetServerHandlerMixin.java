@@ -1,6 +1,8 @@
 package lusii.lusiiclaimchunks.mixins;
 
 import lusii.lusiiclaimchunks.LusiiClaimChunks;
+import net.minecraft.client.player.controller.PlayerControllerMP;
+import net.minecraft.core.block.Block;
 import net.minecraft.core.net.ICommandListener;
 import net.minecraft.core.net.NetworkManager;
 import net.minecraft.core.net.handler.NetHandler;
@@ -90,8 +92,10 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 		int bx = packet.xPosition;
 		int bz = packet.zPosition;
 		boolean allowed = false;
+		WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
+		Block block = worldserver.getBlock(packet.xPosition,packet.yPosition,packet.zPosition);
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).zPosition);
-		if (this.playerEntity.dimension == 0 & packet.status == 2 || this.playerEntity.dimension == 0 & this.playerEntity.gamemode == Gamemode.creative & packet.status == 0) {
+		if (this.playerEntity.dimension == 0 & packet.status == 2 || this.playerEntity.dimension == 0 & (this.playerEntity.gamemode == Gamemode.creative || this.playerEntity.getCurrentPlayerStrVsBlock(block) >= 1.0) & packet.status == 0) {
 			if (LusiiClaimChunks.map.get(intPair) != null) {
 				for (String name : LusiiClaimChunks.map.get(intPair)) {
 					if (this.playerEntity.username.equals(name)) {
@@ -102,7 +106,6 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 
 				} else {
 					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
-					WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
 					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(packet.xPosition, packet.yPosition, packet.zPosition, worldserver));
 					ci.cancel();
 					return;
