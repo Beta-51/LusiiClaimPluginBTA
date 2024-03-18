@@ -1,10 +1,8 @@
 package lusii.lusiiclaimchunks.mixins;
 
 import lusii.lusiiclaimchunks.LusiiClaimChunks;
-import net.minecraft.client.player.controller.PlayerControllerMP;
 import net.minecraft.core.block.Block;
 import net.minecraft.core.net.ICommandListener;
-import net.minecraft.core.net.NetworkManager;
 import net.minecraft.core.net.handler.NetHandler;
 import net.minecraft.core.net.packet.Packet10Flying;
 import net.minecraft.core.net.packet.Packet14BlockDig;
@@ -17,15 +15,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.entity.player.EntityPlayerMP;
 import net.minecraft.server.net.handler.NetServerHandler;
 import net.minecraft.server.world.WorldServer;
-import org.apache.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import static java.lang.Math.floor;
@@ -33,33 +28,11 @@ import static java.lang.Math.floor;
 @Mixin(value = NetServerHandler.class,remap = false,priority = 0)
 public class NetServerHandlerMixin extends NetHandler implements ICommandListener {
 	@Shadow
-	public static Logger logger = Logger.getLogger("Minecraft");
-	@Shadow
-	public NetworkManager netManager;
-	@Shadow
-	public boolean connectionClosed = false;
-	@Shadow
 	private MinecraftServer mcServer;
 	@Shadow
 	private EntityPlayerMP playerEntity;
 	@Shadow
-	private int field_15_f;
-	@Shadow
-	private int field_22004_g;
-	@Shadow
-	private int playerInAirTime;
-	@Shadow
-	private boolean field_22003_h;
-	@Shadow
-	private double lastPosX;
-	@Shadow
-	private double lastPosY;
-	@Shadow
-	private double lastPosZ;
-	@Shadow
 	private boolean hasMoved = true;
-	@Shadow
-	private Map field_10_k = new HashMap();
 
 	@Inject(method = "handleFlying", at = @At("HEAD"))
 	public void handleFlyingClaimChunk(Packet10Flying packet, CallbackInfo ci) {
@@ -83,9 +56,6 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 			}
 		}
 	}
-
-
-
 
 	@Inject(method = "handleBlockDig", at = @At("HEAD"), cancellable = true)
 	public void handleBlockDigClaimChunk(Packet14BlockDig packet, CallbackInfo ci) {

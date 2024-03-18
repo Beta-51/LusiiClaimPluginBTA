@@ -20,16 +20,7 @@
   "entrypoints": {
     "main": [
 			"lusii.lusiiclaimchunks.LusiiClaimChunks"
-    ],
-		"beforeGameStart": [
-			"lusii.lusiiclaimchunks.LusiiClaimChunks"
-		],
-		"afterGameStart": [
-			"lusii.lusiiclaimchunks.LusiiClaimChunks"
-		],
-		"recipesReady": [
-			"lusii.lusiiclaimchunks.LusiiClaimChunks"
-		]
+    ]
 	},
   "mixins": [
       "lusiiclaimchunk.mixins.json"

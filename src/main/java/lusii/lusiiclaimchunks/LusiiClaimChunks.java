@@ -3,16 +3,22 @@ package lusii.lusiiclaimchunks;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import turniplabs.halplibe.util.GameStartEntrypoint;
-import turniplabs.halplibe.util.RecipeEntrypoint;
 import turniplabs.halplibe.util.TomlConfigHandler;
 import turniplabs.halplibe.util.toml.Toml;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 
-public class LusiiClaimChunks implements ModInitializer, GameStartEntrypoint, RecipeEntrypoint {
+public class LusiiClaimChunks implements ModInitializer {
     public static final String MOD_ID = "lusiiclaimchunk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static HashMap<IntPair, List<String>> map = new HashMap<>();
@@ -39,33 +45,18 @@ public class LusiiClaimChunks implements ModInitializer, GameStartEntrypoint, Re
 			map = reopenedMap;
 			System.out.println("LusiiChunksClaim reopened from disk:");
 			System.out.println(reopenedMap);
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (IOException | ClassNotFoundException ignored) {
 
 		}
         LOGGER.info("LusiiClaimChunks initialized.");
     }
 
-	@Override
-	public void beforeGameStart() {
-
-	}
-
-	@Override
-	public void afterGameStart() {
-
-	}
-
-	@Override
-	public void onRecipesReady() {
-
-	}
-
 	public static void saveHashMap() {
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("LusiiChunksClaim.ser"))) {
 			oos.writeObject(map);
 			//System.out.println("HashMap saved to disk.");
-		} catch (IOException e) {
-
+		} catch (IOException ignored) {
+			LOGGER.warn("Chunk claims failed to save to disk!");
 		}
 	}
 
