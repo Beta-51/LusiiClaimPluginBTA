@@ -27,5 +27,7 @@ public final class CommandsMixin {
 			commands.add(new OPTrustCommand());
 			commands.add(new OPUnTrustCommand());
 			commands.add(new TrustedCommand());
+			commands.add(new DeleteAllClaimsCommand());
+			commands.add(new ListClaims());
 	}
 }

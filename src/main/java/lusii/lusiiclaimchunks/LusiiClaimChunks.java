@@ -1,6 +1,9 @@
 package lusii.lusiiclaimchunks;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.core.world.chunk.ChunkPosition;
+import org.jetbrains.annotations.NotNull;
+import org.lwjgl.Sys;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 import org.mariuszgromada.math.mxparser.License;
@@ -16,28 +19,29 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class LusiiClaimChunks implements ModInitializer {
     public static final String MOD_ID = "lusiiclaimchunk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	private static HashMap<IntPair, List<String>> chunkTrustedMap = new HashMap<>();
-	private static HashMap<String, Integer> claimedChunksMap = new HashMap<>();
+	public static HashMap<String, Integer> claimedChunksMap = new HashMap<>();
 
 	public static final TomlConfigHandler CONFIG;
 	static {
 		Toml toml = new Toml();
 		toml.addCategory("ClaimUtil");
 		toml.addEntry("ClaimUtil.cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", "100 * x");
+		toml.addEntry("ClaimUtil.maxClaims", "Max claims a user is allowed to have. 0 = no limit", 25);
 		CONFIG = new TomlConfigHandler(MOD_ID, toml);
 		costEquation = CONFIG.getString("ClaimUtil.cost");
+		maxClaims = CONFIG.getInt("ClaimUtil.maxClaims");
 
 		License.iConfirmNonCommercialUse("UselessBullets");
 	}
 	private static String costEquation;
+	public static int maxClaims;
 
 	public static int getCost(String username){
 		Argument x = new Argument("x = " + claimedChunksMap.getOrDefault(username, 0));
@@ -65,7 +69,7 @@ public class LusiiClaimChunks implements ModInitializer {
 			oos.writeObject(chunkTrustedMap);
 			//System.out.println("HashMap saved to disk.");
 		} catch (IOException ignored) {
-			LOGGER.warn("Chunk claims failed to save to disk!");
+			LOGGER.warn("Chunk claims failed to save to disk! This is a major issue if you do not want griefing!");
 		}
 	}
 	protected static void calculateClaimedChunks(){
@@ -75,6 +79,27 @@ public class LusiiClaimChunks implements ModInitializer {
 			int val = claimedChunksMap.getOrDefault(owner, 0);
 			val++;
 			claimedChunksMap.put(owner, val);
+		}
+	}
+	public static @NotNull ArrayList<String> listClaimedChunks(String username){
+		ArrayList<String> claimedChunksList = new ArrayList<>();
+		for (IntPair pair : chunkTrustedMap.keySet()){
+			String owner = chunkTrustedMap.get(pair).get(0);
+			if (Objects.equals(owner, username)) {
+				claimedChunksList.add("(" + pair.x + "," + pair.y + ")");
+			}
+		}
+		return claimedChunksList;
+	}
+	public static void deleteAllClaimedChunks(String username) {
+		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator(); // This method is used because i would get ConcurrentModificationException if i tried a for loop.
+		while (iterator.hasNext()) {
+			IntPair pair = iterator.next();
+			String owner = chunkTrustedMap.get(pair).get(0);
+			if (Objects.equals(owner, username)) {
+				iterator.remove();
+				deleteClaim(pair);
+			}
 		}
 	}
 	@Nullable
