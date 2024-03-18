@@ -42,7 +42,7 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 		Chunk chunkNew = this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(newPosXClaimChunks, newPosZClaimChunks);
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(chunk.xPosition,chunk.zPosition);
 		LusiiClaimChunks.IntPair intPairNew = new LusiiClaimChunks.IntPair(chunkNew.xPosition,chunkNew.zPosition);
-		if (this.playerEntity.dimension == 0){
+		if (this.playerEntity.dimension == 0 && !this.playerEntity.isPassenger()){
 			if (LusiiClaimChunks.getTrustedPlayersInChunk(intPair) == null && LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew) != null && packet.moving && this.hasMoved) {
 				this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§3Now entering §r" + LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew).get(0) + "'s §3claim.");
 			} else if (LusiiClaimChunks.getTrustedPlayersInChunk(intPair) != null && LusiiClaimChunks.getTrustedPlayersInChunk(intPairNew) == null && packet.moving && this.hasMoved) {
