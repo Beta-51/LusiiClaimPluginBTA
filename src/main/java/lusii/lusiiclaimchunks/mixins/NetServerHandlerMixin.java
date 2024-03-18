@@ -95,20 +95,23 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 		WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
 		Block block = worldserver.getBlock(packet.xPosition,packet.yPosition,packet.zPosition);
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).zPosition);
-		if (this.playerEntity.dimension == 0 & packet.status == 2 || this.playerEntity.dimension == 0 & (this.playerEntity.gamemode == Gamemode.creative || this.playerEntity.getCurrentPlayerStrVsBlock(block) >= 1.0) & packet.status == 0) {
-			if (LusiiClaimChunks.map.get(intPair) != null) {
-				for (String name : LusiiClaimChunks.map.get(intPair)) {
-					if (this.playerEntity.username.equals(name)) {
-						allowed = true;
-						break;
+		if (block != null){
+			if (this.playerEntity.dimension == 0 & packet.status == 2 || this.playerEntity.dimension == 0 & (this.playerEntity.gamemode == Gamemode.creative || this.playerEntity.getCurrentPlayerStrVsBlock(block) >= 1.0) & packet.status == 0) {
+				if (LusiiClaimChunks.map.get(intPair) != null) {
+					for (String name : LusiiClaimChunks.map.get(intPair)) {
+						if (this.playerEntity.username.equals(name)) {
+							allowed = true;
+							break;
+						}
 					}
-				} if (allowed) {
+					if (allowed) {
 
-				} else {
-					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
-					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(packet.xPosition, packet.yPosition, packet.zPosition, worldserver));
-					ci.cancel();
-					return;
+					} else {
+						this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
+						this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(packet.xPosition, packet.yPosition, packet.zPosition, worldserver));
+						ci.cancel();
+						return;
+					}
 				}
 			}
 		}
