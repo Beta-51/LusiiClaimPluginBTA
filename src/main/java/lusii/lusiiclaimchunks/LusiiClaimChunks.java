@@ -1,75 +1,128 @@
 package lusii.lusiiclaimchunks;
 
 import net.fabricmc.api.ModInitializer;
+import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Expression;
+import org.mariuszgromada.math.mxparser.License;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import turniplabs.halplibe.util.GameStartEntrypoint;
-import turniplabs.halplibe.util.RecipeEntrypoint;
 import turniplabs.halplibe.util.TomlConfigHandler;
 import turniplabs.halplibe.util.toml.Toml;
 
-import java.io.*;
-import java.util.*;
+import javax.annotation.Nullable;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
-public class LusiiClaimChunks implements ModInitializer, GameStartEntrypoint, RecipeEntrypoint {
+public class LusiiClaimChunks implements ModInitializer {
     public static final String MOD_ID = "lusiiclaimchunk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	public static HashMap<IntPair, List<String>> map = new HashMap<>();
+	private static HashMap<IntPair, List<String>> chunkTrustedMap = new HashMap<>();
+	private static HashMap<String, Integer> claimedChunksMap = new HashMap<>();
 
 	public static final TomlConfigHandler CONFIG;
 	static {
 		Toml toml = new Toml();
 		toml.addCategory("ClaimUtil");
-		toml.addEntry("ClaimUtil.cost", "Cost per chunk (In points)", 0);
+		toml.addEntry("ClaimUtil.cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", "100 * x");
 		CONFIG = new TomlConfigHandler(MOD_ID, toml);
-		cost = CONFIG.getInt("ClaimUtil.cost");
-	}
-	public static int cost;
+		costEquation = CONFIG.getString("ClaimUtil.cost");
 
+		License.iConfirmNonCommercialUse("UselessBullets");
+	}
+	private static String costEquation;
+
+	public static int getCost(String username){
+		Argument x = new Argument("x = " + claimedChunksMap.getOrDefault(username, 0));
+		Expression expression = new Expression(costEquation, x);
+		return (int) expression.calculate();
+	}
     @Override
     public void onInitialize() {
 
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("LusiiChunksClaim.ser"))) {
 			HashMap<IntPair, List<String>> reopenedMap = (HashMap<IntPair, List<String>>) ois.readObject();
 
-			List<String> googy = new ArrayList<>(Collections.singletonList("tracks"));
-			googy.add("arguoehapoe");
-
-			map = reopenedMap;
+			chunkTrustedMap = reopenedMap;
 			System.out.println("LusiiChunksClaim reopened from disk:");
 			System.out.println(reopenedMap);
-		} catch (IOException | ClassNotFoundException e) {
-
+		} catch (IOException | ClassNotFoundException ignored) {
 		}
+		calculateClaimedChunks();
         LOGGER.info("LusiiClaimChunks initialized.");
     }
 
-	@Override
-	public void beforeGameStart() {
-
-	}
-
-	@Override
-	public void afterGameStart() {
-
-	}
-
-	@Override
-	public void onRecipesReady() {
-
-	}
-
-	public static void saveHashMap() {
+	protected static void saveHashMap() {
+		calculateClaimedChunks();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("LusiiChunksClaim.ser"))) {
-			oos.writeObject(map);
+			oos.writeObject(chunkTrustedMap);
 			//System.out.println("HashMap saved to disk.");
-		} catch (IOException e) {
-
+		} catch (IOException ignored) {
+			LOGGER.warn("Chunk claims failed to save to disk!");
 		}
 	}
-
-
+	protected static void calculateClaimedChunks(){
+		claimedChunksMap.clear();
+		for (IntPair pair : chunkTrustedMap.keySet()){
+			String owner = chunkTrustedMap.get(pair).get(0);
+			int val = claimedChunksMap.getOrDefault(owner, 0);
+			val++;
+			claimedChunksMap.put(owner, val);
+		}
+	}
+	@Nullable
+	public static List<String> getTrustedPlayersInChunk(IntPair chunkCoords){
+		return chunkTrustedMap.get(chunkCoords);
+	}
+	public static void addTrustedPlayerToChunk(IntPair chunkCoords, String username){
+		chunkTrustedMap.putIfAbsent(chunkCoords, new ArrayList<>());
+		if (!chunkTrustedMap.get(chunkCoords).contains(username)){
+			chunkTrustedMap.get(chunkCoords).add(username);
+		}
+		LusiiClaimChunks.saveHashMap();
+	}
+	public static void setOwnerToChunk(IntPair chunkCoords, String username){
+		chunkTrustedMap.putIfAbsent(chunkCoords, new ArrayList<>());
+		if (chunkTrustedMap.get(chunkCoords).contains(username)){
+			chunkTrustedMap.get(chunkCoords).remove(username);
+			chunkTrustedMap.get(chunkCoords).add(0, username);
+		} else {
+			chunkTrustedMap.get(chunkCoords).add(0, username);
+		}
+		LusiiClaimChunks.saveHashMap();
+	}
+	public static void removedPlayerFromChunk(IntPair chunkCoords, String username){
+		if (!chunkTrustedMap.containsKey(chunkCoords)) return;
+        chunkTrustedMap.get(chunkCoords).remove(username);
+		LusiiClaimChunks.saveHashMap();
+	}
+	public static void deleteClaim(IntPair chunkCoords){
+		chunkTrustedMap.remove(chunkCoords);
+		LusiiClaimChunks.saveHashMap();
+	}
+	public static boolean isPlayerTrusted(IntPair chunkCoords, String username){
+		if (isChunkClaimed(chunkCoords)){
+			List<String> trustedNames = getTrustedPlayersInChunk(chunkCoords);
+			return trustedNames.contains(username);
+		}
+		return false;
+	}
+	public static boolean isPlayerOwner(IntPair chunkCoords, String username){
+		if (isChunkClaimed(chunkCoords)){
+			return getTrustedPlayersInChunk(chunkCoords).get(0).equals(username);
+		}
+		return false;
+	}
+	public static boolean isChunkClaimed(IntPair chunkCoords){
+		return chunkTrustedMap.containsKey(chunkCoords);
+	}
 
 
 	public static class IntPair implements Serializable {
