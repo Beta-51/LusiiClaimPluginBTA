@@ -1,5 +1,6 @@
 package lusii.lusiiclaimchunks.commands;
 
+import lusii.lusiiclaimchunks.LusiiClaimChunks;
 import net.minecraft.core.net.command.Command;
 import net.minecraft.core.net.command.CommandHandler;
 import net.minecraft.core.net.command.CommandSender;
@@ -16,8 +17,14 @@ public class DeleteAllClaimsCommand extends Command {
 	public boolean execute(CommandHandler handler, CommandSender sender, String[] args) {
 		if (args.length > 0) {
 			if (Objects.equals(args[0].toLowerCase(), "confirm")) {
-				deleteAllClaimedChunks(sender.getPlayer().username);
-				sender.sendMessage("§3All of your claims have been erased.");
+				int delCount = deleteAllClaimedChunks(sender.getPlayer().username);
+				int fullRefund = LusiiClaimChunks.getFullRefund(delCount);
+				sender.getPlayer().score += fullRefund;
+
+//				sender.sendMessage("§3All of your claims have been erased.");
+				sender.sendMessage("§eUnclaimed §4" + delCount + "§e chunks.");
+				sender.sendMessage("§1Refunded §4" + fullRefund + "§1 points.");
+
 				return true;
 			}
 		}
