@@ -16,6 +16,9 @@ public class UnTrustCommand extends Command {
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(cx,cz);
 		String username = sender.getPlayer().username;
 		String player;
+		if (args.length == 0) {
+			return false;
+		}
 		player = args[0];
 		if (!LusiiClaimChunks.isChunkClaimed(intPair)) {
 			sender.sendMessage("§3No one owns this chunk!");
@@ -35,6 +38,6 @@ public class UnTrustCommand extends Command {
 	}
 //
 	public void sendCommandSyntax(CommandHandler handler, CommandSender sender) {
-
+		sender.sendMessage("/untrust <player>");
 	}
 }
