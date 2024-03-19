@@ -25,6 +25,7 @@ public class DelClaimCommand extends Command {
 			LusiiClaimChunks.deleteClaim(intPair);
 			int refund = LusiiClaimChunks.getRefund(username);
 			sender.getPlayer().score += refund;
+			sender.sendMessage("§4Claim removed!");
 			sender.sendMessage("§1Refunded §4" + refund + "§1 points.");
 
         }

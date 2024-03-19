@@ -47,7 +47,6 @@ public class LusiiClaimChunks implements ModInitializer {
 		notifyOPClaim = CONFIG.getBoolean("notifyOPClaim");
 
 		License.iConfirmNonCommercialUse("UselessBullets");
-		License.iConfirmNonCommercialUse("wyspr");
 	}
 	private static String costEquation;
 	public static int maxClaims;
@@ -62,13 +61,7 @@ public class LusiiClaimChunks implements ModInitializer {
 	}
 
 	public static int getRefund(String username) {
-		int claimedCount = claimedChunksMap.getOrDefault(username, 0);
-		if (claimedCount > 0) claimedCount--;
-		if (claimedCount == 0) return 0;
-
-		Argument x = new Argument("x = " + claimedCount);
-		Expression expression = new Expression(costEquation, x);
-		int lastChunkCost = (int) expression.calculate();
+		int lastChunkCost = getCost(username);
 
 		return (int) (refundRatio * (float) lastChunkCost);
 	}
@@ -76,23 +69,19 @@ public class LusiiClaimChunks implements ModInitializer {
 	public static int getFullRefund(int ownedChunks) { // Don't ever talk to me or son ever again
 		int totalRefund = 0;
 
-		for (int i = 0; i <= ownedChunks; i++) {
+		for (int i = 0; i < ownedChunks; i++) {
 			Argument x = new Argument("x = " + i);
 			Expression expression = new Expression(costEquation, x);
 
 			totalRefund += (int) expression.calculate();
 		}
 
-		return totalRefund;
+		return (int) (refundRatio * (float) totalRefund);
+
 	}
 
 	public static int getOPRefund(String username) {
-		int claimedCount = claimedChunksMap.getOrDefault(username, 0);
-		if (claimedCount > 0) claimedCount--;
-
-		Argument x = new Argument("x = " + claimedCount);
-		Expression expression = new Expression(costEquation, x);
-		int lastChunkCost = (int) expression.calculate();
+		int lastChunkCost = getCost(username);
 
 		return (int) (adminRefundRatio * (float) lastChunkCost);
 	}
