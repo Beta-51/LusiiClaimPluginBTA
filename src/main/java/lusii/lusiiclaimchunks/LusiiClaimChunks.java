@@ -30,24 +30,73 @@ public class LusiiClaimChunks implements ModInitializer {
 
 	public static final TomlConfigHandler CONFIG;
 	static {
-		Toml toml = new Toml();
-		toml.addCategory("ClaimUtil");
-		toml.addEntry("ClaimUtil.cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", "100 * x");
-		toml.addEntry("ClaimUtil.maxClaims", "Max claims a user is allowed to have. 0 = no limit", 25);
+		Toml toml = new Toml()
+			.addEntry("cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", "100 * x")
+			.addEntry("maxClaims", "Max claims a user is allowed to have. 0 = no limit", 25)
+			.addEntry("refundRatio", "Amount refunded (1.0 = 100%)", 0.75f)
+			.addEntry("OPRefundRatio", "Amount refunded when an admin claims from a player (1.0 = 100%)", 1.0f)
+			.addEntry("notifyOPClaim", "Notify a player when an admin claims their chunk", false);
+
+
 		CONFIG = new TomlConfigHandler(MOD_ID, toml);
-		costEquation = CONFIG.getString("ClaimUtil.cost");
-		maxClaims = CONFIG.getInt("ClaimUtil.maxClaims");
+
+		costEquation = CONFIG.getString("cost");
+		maxClaims = CONFIG.getInt("maxClaims");
+		refundRatio = CONFIG.getFloat("refundRatio");
+		adminRefundRatio = CONFIG.getFloat("OPRefundRatio");
+		notifyOPClaim = CONFIG.getBoolean("notifyOPClaim");
 
 		License.iConfirmNonCommercialUse("UselessBullets");
+		License.iConfirmNonCommercialUse("wyspr");
 	}
 	private static String costEquation;
 	public static int maxClaims;
+	public static float refundRatio;
+	public static float adminRefundRatio;
+	public static boolean notifyOPClaim;
 
 	public static int getCost(String username){
 		Argument x = new Argument("x = " + claimedChunksMap.getOrDefault(username, 0));
 		Expression expression = new Expression(costEquation, x);
 		return (int) expression.calculate();
 	}
+
+	public static int getRefund(String username) {
+		int claimedCount = claimedChunksMap.getOrDefault(username, 0);
+		if (claimedCount > 0) claimedCount--;
+		if (claimedCount == 0) return 0;
+
+		Argument x = new Argument("x = " + claimedCount);
+		Expression expression = new Expression(costEquation, x);
+		int lastChunkCost = (int) expression.calculate();
+
+		return (int) (refundRatio * (float) lastChunkCost);
+	}
+
+	public static int getFullRefund(int ownedChunks) { // Don't ever talk to me or son ever again
+		int totalRefund = 0;
+
+		for (int i = 0; i <= ownedChunks; i++) {
+			Argument x = new Argument("x = " + i);
+			Expression expression = new Expression(costEquation, x);
+
+			totalRefund += (int) expression.calculate();
+		}
+
+		return totalRefund;
+	}
+
+	public static int getOPRefund(String username) {
+		int claimedCount = claimedChunksMap.getOrDefault(username, 0);
+		if (claimedCount > 0) claimedCount--;
+
+		Argument x = new Argument("x = " + claimedCount);
+		Expression expression = new Expression(costEquation, x);
+		int lastChunkCost = (int) expression.calculate();
+
+		return (int) (adminRefundRatio * (float) lastChunkCost);
+	}
+
     @Override
     public void onInitialize() {
 
@@ -91,16 +140,22 @@ public class LusiiClaimChunks implements ModInitializer {
 		}
 		return claimedChunksList;
 	}
-	public static void deleteAllClaimedChunks(String username) {
+
+	// Deletes all chunks owned by a user and returns the amount of chunks deleted
+	public static int deleteAllClaimedChunks(String username) {
+		int count = 0;
 		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator(); // This method is used because i would get ConcurrentModificationException if i tried a for loop.
 		while (iterator.hasNext()) {
 			IntPair pair = iterator.next();
 			String owner = chunkTrustedMap.get(pair).get(0);
 			if (Objects.equals(owner, username)) {
 				iterator.remove();
+				count++;
 				deleteClaim(pair);
 			}
 		}
+
+		return count;
 	}
 	@Nullable
 	public static List<String> getTrustedPlayersInChunk(IntPair chunkCoords){

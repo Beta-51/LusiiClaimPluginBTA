@@ -23,6 +23,10 @@ public class DelClaimCommand extends Command {
 			sender.sendMessage("§3You do not own this chunk!");
         } else {
 			LusiiClaimChunks.deleteClaim(intPair);
+			int refund = LusiiClaimChunks.getRefund(username);
+			sender.getPlayer().score += refund;
+			sender.sendMessage("§1Refunded §4" + refund + "§1 points.");
+
         }
         return true;
     }
