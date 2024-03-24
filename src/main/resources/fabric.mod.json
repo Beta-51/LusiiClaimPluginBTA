@@ -6,7 +6,9 @@
   "name": "Claim Chunks",
   "description": "Claim chunks to prevent griefs",
   "authors": [
-    "Lusii"
+    "Lusii",
+		"Useless",
+		"Wyspr"
   ],
   "contact": {
     "homepage": "",
