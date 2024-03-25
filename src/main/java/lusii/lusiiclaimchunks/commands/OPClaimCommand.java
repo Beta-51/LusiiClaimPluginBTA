@@ -21,22 +21,26 @@ public class OPClaimCommand extends Command {
 		} else {
 			username = args[0];
 		}
-
-		if (LusiiClaimChunks.isChunkClaimed(intPair)) {
-			String oldOwner = LusiiClaimChunks.getTrustedPlayersInChunk(intPair).get(0);
-			int refund = LusiiClaimChunks.getOPRefund(oldOwner);
-			EntityPlayer player = handler.getPlayer(oldOwner);
-			player.score += refund;
-			if (LusiiClaimChunks.notifyOPClaim) {
-				String posString = "(" + cx + ", " + cz + ")";
-				handler.sendMessageToPlayer(player, "§1Claim at §4" + posString + "§1 was claimed by an Operator");
-				handler.sendMessageToPlayer(player, "§1You have been refunded §4" + refund + "§1 points.");
-
-			}
-		}
-
 		LusiiClaimChunks.setOwnerToChunk(intPair, username);
 		sender.sendMessage("§eClaimed via Operator");
+
+
+			if (LusiiClaimChunks.isChunkClaimed(intPair)) {
+				String oldOwner = LusiiClaimChunks.getTrustedPlayersInChunk(intPair).get(0);
+				try {
+				int refund = LusiiClaimChunks.getOPRefund(oldOwner);
+				EntityPlayer player = handler.getPlayer(oldOwner);
+				player.score += refund;
+				if (LusiiClaimChunks.notifyOPClaim) {
+					String posString = "(" + cx + ", " + cz + ")";
+					handler.sendMessageToPlayer(player, "§1Claim at §4" + posString + "§1 was claimed by an Operator");
+					handler.sendMessageToPlayer(player, "§1You have been refunded §4" + refund + "§1 points.");
+				}
+				} catch (Exception e) {
+					sender.sendMessage("§eUnable to give refund to owner.");
+				}
+			}
+
 		return true;
 	}
 //

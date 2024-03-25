@@ -20,17 +20,20 @@ public class OPDelClaimCommand extends Command {
 			return true;
 		}
 		String oldOwner = LusiiClaimChunks.getTrustedPlayersInChunk(intPair).get(0);
-		int refund = LusiiClaimChunks.getOPRefund(oldOwner);
-		EntityPlayer player = handler.getPlayer(oldOwner);
-		player.score += refund;
-		if (LusiiClaimChunks.notifyOPClaim) {
-			String posString = "(" + cx + ", " + cz + ")";
-			handler.sendMessageToPlayer(player, "§1Claim at §4" + posString + "§1 was deleted by an Operator");
-			handler.sendMessageToPlayer(player, "§1You have been refunded §4" + refund + "§1 points.");
-		}
-
 		LusiiClaimChunks.deleteClaim(intPair);
 		sender.sendMessage("§eClaim deleted via Operator");
+		try {
+			int refund = LusiiClaimChunks.getOPRefund(oldOwner);
+			EntityPlayer player = handler.getPlayer(oldOwner);
+			player.score += refund;
+			if (LusiiClaimChunks.notifyOPClaim) {
+				String posString = "(" + cx + ", " + cz + ")";
+				handler.sendMessageToPlayer(player, "§1Claim at §4" + posString + "§1 was deleted by an Operator");
+				handler.sendMessageToPlayer(player, "§1You have been refunded §4" + refund + "§1 points.");
+			}
+		} catch (Exception e) {
+			sender.sendMessage("§eUnable to give refund to owner.");
+		}
 		return true;
 	}
 //

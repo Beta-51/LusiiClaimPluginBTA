@@ -79,9 +79,9 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 		x += direction.getOffsetX();
 		y += direction.getOffsetY();
 		z += direction.getOffsetZ();
-
+		boolean allowsit = (this.playerEntity.world.getBlock(packet.xPosition,packet.yPosition,packet.zPosition) == Block.seat && !this.playerEntity.isSneaking());
         LusiiClaimChunks.IntPair intPair2 = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).zPosition);
-		if (this.playerEntity.dimension == 0 && LusiiClaimChunks.isChunkClaimed(intPair2) && !LusiiClaimChunks.isPlayerTrusted(intPair2, playerEntity.username)) {
+		if (this.playerEntity.dimension == 0 && LusiiClaimChunks.isChunkClaimed(intPair2) && !LusiiClaimChunks.isPlayerTrusted(intPair2, playerEntity.username) && !allowsit) {
 			this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
 			WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
 			this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));
