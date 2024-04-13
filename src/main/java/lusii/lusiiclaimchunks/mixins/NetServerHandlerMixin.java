@@ -4,10 +4,7 @@ import lusii.lusiiclaimchunks.LusiiClaimChunks;
 import net.minecraft.core.block.Block;
 import net.minecraft.core.net.ICommandListener;
 import net.minecraft.core.net.handler.NetHandler;
-import net.minecraft.core.net.packet.Packet10Flying;
-import net.minecraft.core.net.packet.Packet14BlockDig;
-import net.minecraft.core.net.packet.Packet15Place;
-import net.minecraft.core.net.packet.Packet53BlockChange;
+import net.minecraft.core.net.packet.*;
 import net.minecraft.core.player.gamemode.Gamemode;
 import net.minecraft.core.util.helper.Direction;
 import net.minecraft.core.world.chunk.Chunk;
@@ -15,6 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.entity.player.EntityPlayerMP;
 import net.minecraft.server.net.handler.NetServerHandler;
 import net.minecraft.server.world.WorldServer;
+import org.checkerframework.checker.units.qual.A;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,6 +30,19 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 	@Shadow
 	private boolean hasMoved = true;
 
+	@Inject(method = "handleUpdateSign", at = @At("HEAD"), cancellable = true)
+	public void handleUpdateSign(Packet130UpdateSign packet, CallbackInfo ci) {
+		WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
+		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).zPosition);
+			if (this.playerEntity.dimension == 0) {
+				if (!LusiiClaimChunks.isPlayerTrusted(intPair, playerEntity.username) && LusiiClaimChunks.isChunkClaimed(intPair)) {
+					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
+					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(packet.xPosition, packet.yPosition, packet.zPosition, worldserver));
+					ci.cancel();
+					return;
+				}
+			}
+	}
 	@Inject(method = "handleFlying", at = @At("HEAD"))
 	public void handleFlyingClaimChunk(Packet10Flying packet, CallbackInfo ci) {
 		int newPosXClaimChunks = (int) floor(packet.xPosition);
