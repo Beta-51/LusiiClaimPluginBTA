@@ -83,7 +83,8 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 	}
 	@Inject(method = "handlePlace", at = @At("HEAD"), cancellable = true)
 	public void handlePlaceChunkClaim(Packet15Place packet, CallbackInfo ci) {
-        int x = packet.xPosition;
+		if(packet.direction == Direction.NONE){return;}
+		int x = packet.xPosition;
 		int y = packet.yPosition;
 		int z = packet.zPosition;
 		Direction direction = packet.direction;
@@ -91,7 +92,7 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 		y += direction.getOffsetY();
 		z += direction.getOffsetZ();
 		boolean allowsit = (this.playerEntity.world.getBlock(packet.xPosition,packet.yPosition,packet.zPosition) == Block.seat && !this.playerEntity.isSneaking());
-        LusiiClaimChunks.IntPair intPair2 = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).zPosition);
+		LusiiClaimChunks.IntPair intPair2 = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).zPosition);
 		if (this.playerEntity.dimension == 0 && LusiiClaimChunks.isChunkClaimed(intPair2) && !LusiiClaimChunks.isPlayerTrusted(intPair2, playerEntity.username) && !allowsit) {
 			this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
 			WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
