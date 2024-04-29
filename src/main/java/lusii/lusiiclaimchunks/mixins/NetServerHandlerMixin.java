@@ -83,6 +83,7 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 	}
 	@Inject(method = "handlePlace", at = @At("HEAD"), cancellable = true)
 	public void handlePlaceChunkClaim(Packet15Place packet, CallbackInfo ci) {
+		if(packet.yPosition < 0){return;}
         int x = packet.xPosition;
 		int y = packet.yPosition;
 		int z = packet.zPosition;
