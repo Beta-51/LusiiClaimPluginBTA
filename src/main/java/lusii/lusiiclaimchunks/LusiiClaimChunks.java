@@ -23,8 +23,8 @@ import java.util.*;
 
 
 public class LusiiClaimChunks implements ModInitializer {
-    public static final String MOD_ID = "lusiiclaimchunk";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final String MOD_ID = "lusiiclaimchunk";
+	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	private static HashMap<IntPair, List<String>> chunkTrustedMap = new HashMap<>();
 	public static HashMap<String, Integer> claimedChunksMap = new HashMap<>();
 
@@ -86,8 +86,8 @@ public class LusiiClaimChunks implements ModInitializer {
 		return (int) (adminRefundRatio * (float) lastChunkCost);
 	}
 
-    @Override
-    public void onInitialize() {
+	@Override
+	public void onInitialize() {
 
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("LusiiChunksClaim.ser"))) {
 			HashMap<IntPair, List<String>> reopenedMap = (HashMap<IntPair, List<String>>) ois.readObject();
@@ -98,8 +98,8 @@ public class LusiiClaimChunks implements ModInitializer {
 		} catch (IOException | ClassNotFoundException ignored) {
 		}
 		calculateClaimedChunks();
-        LOGGER.info("LusiiClaimChunks initialized.");
-    }
+		LOGGER.info("LusiiClaimChunks initialized.");
+	}
 
 	protected static void saveHashMap() {
 		calculateClaimedChunks();
@@ -130,29 +130,6 @@ public class LusiiClaimChunks implements ModInitializer {
 		return claimedChunksList;
 	}
 
-	public static void addPlayerToChunkAll(String player, String trusted) {
-		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator();
-		while (iterator.hasNext()) {
-			IntPair pair = iterator.next();
-            if (Objects.equals(chunkTrustedMap.get(pair).get(0), player) && !chunkTrustedMap.get(pair).contains(trusted)) {
-                chunkTrustedMap.putIfAbsent(pair, new ArrayList<>());
-                chunkTrustedMap.get(pair).add(trusted);
-            }
-        }
-		LusiiClaimChunks.saveHashMap();
-	}
-
-	public static void removePlayerFromChunkAll(String player, String victim) {
-		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator();
-		while (iterator.hasNext()) {
-			IntPair pair = iterator.next();
-            if (Objects.equals(chunkTrustedMap.get(pair).get(0), player)) {
-                chunkTrustedMap.get(pair).remove(victim);
-            }
-        }
-		LusiiClaimChunks.saveHashMap();
-	}
-
 	// Deletes all chunks owned by a user and returns the amount of chunks deleted
 	public static int deleteAllClaimedChunks(String username) {
 		int count = 0;
@@ -166,10 +143,39 @@ public class LusiiClaimChunks implements ModInitializer {
 				deleteClaim(pair);
 			}
 		}
-		LusiiClaimChunks.saveHashMap();
 
 		return count;
 	}
+
+	public static void addPlayerToChunkAll(String username, String trusted) {
+		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator(); // This method is used because i would get ConcurrentModificationException if i tried a for loop.
+		while (iterator.hasNext()) {
+			IntPair pair = iterator.next();
+			String owner = chunkTrustedMap.get(pair).get(0);
+			if (Objects.equals(owner, username)) {
+				if (!chunkTrustedMap.get(pair).contains(trusted)){
+					chunkTrustedMap.get(pair).add(trusted);
+				}
+			}
+		}
+		LusiiClaimChunks.saveHashMap();
+	}
+
+	public static void removedPlayerFromChunkAll(String username, String victim) {
+		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator(); // This method is used because i would get ConcurrentModificationException if i tried a for loop.
+		while (iterator.hasNext()) {
+			IntPair pair = iterator.next();
+			String owner = chunkTrustedMap.get(pair).get(0);
+			if (Objects.equals(owner, username)) {
+				if (!chunkTrustedMap.get(pair).contains(victim)){
+					chunkTrustedMap.get(pair).add(victim);
+				}
+			}
+		}
+		LusiiClaimChunks.saveHashMap();
+	}
+
+
 	@Nullable
 	public static List<String> getTrustedPlayersInChunk(IntPair chunkCoords){
 		return chunkTrustedMap.get(chunkCoords);
@@ -193,13 +199,19 @@ public class LusiiClaimChunks implements ModInitializer {
 	}
 	public static void removedPlayerFromChunk(IntPair chunkCoords, String username){
 		if (!chunkTrustedMap.containsKey(chunkCoords)) return;
-        chunkTrustedMap.get(chunkCoords).remove(username);
+		chunkTrustedMap.get(chunkCoords).remove(username);
 		LusiiClaimChunks.saveHashMap();
 	}
 	public static void deleteClaim(IntPair chunkCoords){
 		chunkTrustedMap.remove(chunkCoords);
 		LusiiClaimChunks.saveHashMap();
 	}
+
+	public static String getOwner(IntPair chunkCoords) {
+		if (!chunkTrustedMap.containsKey(chunkCoords)) return "-";
+		return chunkTrustedMap.get(chunkCoords).get(0);
+	}
+
 	public static boolean isPlayerTrusted(IntPair chunkCoords, String username){
 		if (isChunkClaimed(chunkCoords)){
 			List<String> trustedNames = getTrustedPlayersInChunk(chunkCoords);

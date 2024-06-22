@@ -1,19 +1,21 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "lusii.lusiiclaimchunks.mixins",
-    "compatibilityLevel": "JAVA_8",
-    "mixins": [
-      "NetServerHandlerMixin",
-      "CommandsMixin",
-      "ExplosionMixin",
-      "BlockFluidMixin",
-      "ItemBucketEmptyMixin",
-      "ItemBucketMixin"
-    ],
-    "client": [
-    ],
-    "injectors": {
-        "defaultRequire": 1
+  "required": true,
+  "minVersion": "0.8",
+  "package": "lusii.lusiiclaimchunks.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "BlockFireMixin",
+    "BlockFluidFlowingMixin",
+    "BlockPistonBaseMixin",
+    "CommandsMixin",
+    "ExplosionMixin",
+    "ItemBucketEmptyMixin",
+    "ItemBucketMixin",
+    "NetServerHandlerMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
   }
 }

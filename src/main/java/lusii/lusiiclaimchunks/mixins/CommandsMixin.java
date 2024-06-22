@@ -29,7 +29,7 @@ public final class CommandsMixin {
 			commands.add(new TrustedCommand());
 			commands.add(new DeleteAllClaimsCommand());
 			commands.add(new ListClaims());
-			commands.add(new UnTrustAllCommand());
 			commands.add(new TrustAllCommand());
+			commands.add(new UnTrustAllCommand());
 	}
 }

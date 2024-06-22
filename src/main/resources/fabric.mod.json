@@ -1,37 +1,35 @@
 {
-  "schemaVersion": 1,
-  "id": "lusiiclaimchunk",
-  "version": "${version}",
+	"schemaVersion": 1,
+	"id": "lusiiclaimchunk",
+	"version": "${version}",
 
-  "name": "Claim Chunks",
-  "description": "Claim chunks to prevent griefs",
-  "authors": [
-    "Lusii",
-		"Useless",
-		"Wyspr"
-  ],
-  "contact": {
-    "homepage": "",
-    "sources": ""
-  },
+	"name": "Claim Chunks",
+	"description": "Claim chunks to prevent griefs",
+	"authors": [
+		"Lusii"
+	],
+	"contact": {
+		"homepage": "",
+		"sources": ""
+	},
 
 	"icon": "icon.png",
-  "license": "CC0-1.0",
+	"license": "CC0-1.0",
 
-  "environment": "*",
-  "entrypoints": {
-    "main": [
+	"environment": "*",
+	"entrypoints": {
+		"main": [
 			"lusii.lusiiclaimchunks.LusiiClaimChunks"
-    ]
+		]
 	},
-  "mixins": [
-      "lusiiclaimchunk.mixins.json"
-  ],
+	"mixins": [
+		"lusiiclaimchunk.mixins.json"
+	],
 
-  "depends": {
-		"minecraft": "~7.1",
-    "fabricloader": ">=0.13.3"
-  },
-  "suggests": {
-  }
+	"depends": {
+		"minecraft": "~7.2-beta.2",
+		"fabricloader": ">=0.13.3"
+	},
+	"suggests": {
+	}
 }

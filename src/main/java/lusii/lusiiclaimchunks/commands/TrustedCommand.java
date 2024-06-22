@@ -22,7 +22,6 @@ public class TrustedCommand extends Command {
 		}
 		String owner = Objects.requireNonNull(LusiiClaimChunks.getTrustedPlayersInChunk(intPair)).get(0);
 		String theResults = Objects.requireNonNull(LusiiClaimChunks.getTrustedPlayersInChunk(intPair)).toString().replace(" , ", ", ");
-		theResults = theResults.replaceFirst(", ", "");
 		theResults = theResults.replace("[", "");
 		theResults = theResults.replace("]", "");
 		theResults = theResults.replaceFirst(owner, "");
