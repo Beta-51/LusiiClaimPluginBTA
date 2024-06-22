@@ -4,10 +4,7 @@ import lusii.lusiiclaimchunks.LusiiClaimChunks;
 import net.minecraft.core.block.Block;
 import net.minecraft.core.net.ICommandListener;
 import net.minecraft.core.net.handler.NetHandler;
-import net.minecraft.core.net.packet.Packet10Flying;
-import net.minecraft.core.net.packet.Packet14BlockDig;
-import net.minecraft.core.net.packet.Packet15Place;
-import net.minecraft.core.net.packet.Packet53BlockChange;
+import net.minecraft.core.net.packet.*;
 import net.minecraft.core.player.gamemode.Gamemode;
 import net.minecraft.core.util.helper.Direction;
 import net.minecraft.core.world.chunk.Chunk;
@@ -15,6 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.entity.player.EntityPlayerMP;
 import net.minecraft.server.net.handler.NetServerHandler;
 import net.minecraft.server.world.WorldServer;
+import org.checkerframework.checker.units.qual.A;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,6 +30,19 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 	@Shadow
 	private boolean hasMoved = true;
 
+	@Inject(method = "handleUpdateSign", at = @At("HEAD"), cancellable = true)
+	public void handleUpdateSign(Packet130UpdateSign packet, CallbackInfo ci) {
+		WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
+		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(packet.xPosition,packet.zPosition).zPosition);
+			if (this.playerEntity.dimension == 0) {
+				if (!LusiiClaimChunks.isPlayerTrusted(intPair, playerEntity.username) && LusiiClaimChunks.isChunkClaimed(intPair)) {
+					this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
+					this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(packet.xPosition, packet.yPosition, packet.zPosition, worldserver));
+					ci.cancel();
+					return;
+				}
+			}
+	}
 	@Inject(method = "handleFlying", at = @At("HEAD"))
 	public void handleFlyingClaimChunk(Packet10Flying packet, CallbackInfo ci) {
 		int newPosXClaimChunks = (int) floor(packet.xPosition);
@@ -72,16 +83,17 @@ public class NetServerHandlerMixin extends NetHandler implements ICommandListene
 	}
 	@Inject(method = "handlePlace", at = @At("HEAD"), cancellable = true)
 	public void handlePlaceChunkClaim(Packet15Place packet, CallbackInfo ci) {
-        int x = packet.xPosition;
+		if(packet.direction == Direction.NONE){return;}
+		int x = packet.xPosition;
 		int y = packet.yPosition;
 		int z = packet.zPosition;
 		Direction direction = packet.direction;
 		x += direction.getOffsetX();
 		y += direction.getOffsetY();
 		z += direction.getOffsetZ();
-
-        LusiiClaimChunks.IntPair intPair2 = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).zPosition);
-		if (this.playerEntity.dimension == 0 && LusiiClaimChunks.isChunkClaimed(intPair2) && !LusiiClaimChunks.isPlayerTrusted(intPair2, playerEntity.username)) {
+		boolean allowsit = (this.playerEntity.world.getBlock(packet.xPosition,packet.yPosition,packet.zPosition) == Block.seat && !this.playerEntity.isSneaking());
+		LusiiClaimChunks.IntPair intPair2 = new LusiiClaimChunks.IntPair(this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).xPosition,this.mcServer.getDimensionWorld(this.playerEntity.dimension).getChunkFromBlockCoords(x,z).zPosition);
+		if (this.playerEntity.dimension == 0 && LusiiClaimChunks.isChunkClaimed(intPair2) && !LusiiClaimChunks.isPlayerTrusted(intPair2, playerEntity.username) && !allowsit) {
 			this.mcServer.playerList.sendChatMessageToPlayer(this.playerEntity.username, "§e§lHey!§r This chunk does not belong to you!");
 			WorldServer worldserver = this.mcServer.getDimensionWorld(this.playerEntity.dimension);
 			this.playerEntity.playerNetServerHandler.sendPacket(new Packet53BlockChange(x, y, z, worldserver));

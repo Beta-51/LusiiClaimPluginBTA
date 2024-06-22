@@ -5,6 +5,8 @@ import net.minecraft.core.net.command.Command;
 import net.minecraft.core.net.command.CommandHandler;
 import net.minecraft.core.net.command.CommandSender;
 
+import java.util.Objects;
+
 public class TrustedCommand extends Command {
 	public TrustedCommand() {
 		super("trusted","claimtrusted","claimwho");
@@ -18,14 +20,15 @@ public class TrustedCommand extends Command {
 			sender.sendMessage("§eNo one owns this chunk!");
 			return true;
 		}
-
-		String theResults = LusiiClaimChunks.getTrustedPlayersInChunk(intPair).toString().replace(" , ", ", ");
+		String owner = Objects.requireNonNull(LusiiClaimChunks.getTrustedPlayersInChunk(intPair)).get(0);
+		String theResults = Objects.requireNonNull(LusiiClaimChunks.getTrustedPlayersInChunk(intPair)).toString().replace(" , ", ", ");
 		theResults = theResults.replaceFirst(", ", "");
 		theResults = theResults.replace("[", "");
 		theResults = theResults.replace("]", "");
+		theResults = theResults.replaceFirst(owner, "");
 
-		sender.sendMessage("§3Chunk owner: §r"+ LusiiClaimChunks.getTrustedPlayersInChunk(intPair).get(0));
-		sender.sendMessage("§3Trusted players: §r"+theResults);
+		sender.sendMessage("§3Chunk owner: §r" + owner);
+		sender.sendMessage("§3Trusted players: §r" + theResults);
 
 		return true;
 

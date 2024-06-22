@@ -16,17 +16,20 @@ public class TrustCommand extends Command {
 		LusiiClaimChunks.IntPair intPair = new LusiiClaimChunks.IntPair(cx,cz);
 		String username = sender.getPlayer().username;
 		String player;
-		player = args[0];
-		if (!LusiiClaimChunks.isChunkClaimed(intPair)) {
-			sender.sendMessage("§3No one owns this chunk!");
-			return true;
+		if (args.length == 0) {
+			return false;
 		}
-		if (!LusiiClaimChunks.isPlayerOwner(new LusiiClaimChunks.IntPair(cx, cz), username)) {
-			sender.sendMessage("§eYou do not own this chunk!");
-        } else {
-			LusiiClaimChunks.addTrustedPlayerToChunk(intPair, player);
-			sender.sendMessage("§3Player §r"+ player + " §3trusted.");
-        }
+		player = args[0];
+			if (!LusiiClaimChunks.isChunkClaimed(intPair)) {
+				sender.sendMessage("§3No one owns this chunk!");
+				return true;
+			}
+			if (!LusiiClaimChunks.isPlayerOwner(new LusiiClaimChunks.IntPair(cx, cz), username)) {
+				sender.sendMessage("§eYou do not own this chunk!");
+			} else {
+				LusiiClaimChunks.addTrustedPlayerToChunk(intPair, player);
+				sender.sendMessage("§3Player §r" + player + " §3trusted.");
+			}
         return true;
     }
 //
@@ -35,6 +38,6 @@ public class TrustCommand extends Command {
 	}
 //
 	public void sendCommandSyntax(CommandHandler handler, CommandSender sender) {
-
+		sender.sendMessage("/trust <player>");
 	}
 }

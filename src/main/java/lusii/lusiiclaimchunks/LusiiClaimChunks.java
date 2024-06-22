@@ -130,6 +130,29 @@ public class LusiiClaimChunks implements ModInitializer {
 		return claimedChunksList;
 	}
 
+	public static void addPlayerToChunkAll(String player, String trusted) {
+		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator();
+		while (iterator.hasNext()) {
+			IntPair pair = iterator.next();
+            if (Objects.equals(chunkTrustedMap.get(pair).get(0), player) && !chunkTrustedMap.get(pair).contains(trusted)) {
+                chunkTrustedMap.putIfAbsent(pair, new ArrayList<>());
+                chunkTrustedMap.get(pair).add(trusted);
+            }
+        }
+		LusiiClaimChunks.saveHashMap();
+	}
+
+	public static void removePlayerFromChunkAll(String player, String victim) {
+		Iterator<IntPair> iterator = chunkTrustedMap.keySet().iterator();
+		while (iterator.hasNext()) {
+			IntPair pair = iterator.next();
+            if (Objects.equals(chunkTrustedMap.get(pair).get(0), player)) {
+                chunkTrustedMap.get(pair).remove(victim);
+            }
+        }
+		LusiiClaimChunks.saveHashMap();
+	}
+
 	// Deletes all chunks owned by a user and returns the amount of chunks deleted
 	public static int deleteAllClaimedChunks(String username) {
 		int count = 0;
@@ -143,6 +166,7 @@ public class LusiiClaimChunks implements ModInitializer {
 				deleteClaim(pair);
 			}
 		}
+		LusiiClaimChunks.saveHashMap();
 
 		return count;
 	}

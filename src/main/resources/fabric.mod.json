@@ -6,7 +6,9 @@
   "name": "Claim Chunks",
   "description": "Claim chunks to prevent griefs",
   "authors": [
-    "Lusii"
+    "Lusii",
+		"Useless",
+		"Wyspr"
   ],
   "contact": {
     "homepage": "",
@@ -27,7 +29,7 @@
   ],
 
   "depends": {
-		"minecraft": "~7.1-beta.1",
+		"minecraft": "~7.1",
     "fabricloader": ">=0.13.3"
   },
   "suggests": {
