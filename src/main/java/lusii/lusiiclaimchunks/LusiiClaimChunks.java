@@ -1,6 +1,7 @@
 package lusii.lusiiclaimchunks;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.world.chunk.ChunkPosition;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.Sys;
@@ -13,30 +14,40 @@ import turniplabs.halplibe.util.TomlConfigHandler;
 import turniplabs.halplibe.util.toml.Toml;
 
 import javax.annotation.Nullable;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 
 
 public class LusiiClaimChunks implements ModInitializer {
 	public static final String MOD_ID = "lusiiclaimchunk";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final String CFG_FILE_PATH = FabricLoader.getInstance().getGameDir().toString() + "/config/lusiiclaimchunk.cfg";
 	private static HashMap<IntPair, List<String>> chunkTrustedMap = new HashMap<>();
 	public static HashMap<String, Integer> claimedChunksMap = new HashMap<>();
+	public static TomlConfigHandler CONFIG = null;
 
-	public static final TomlConfigHandler CONFIG;
-	static {
+	public static String costEquation;
+	public static int maxClaims;
+	public static float refundRatio;
+	public static float adminRefundRatio;
+	public static boolean notifyOPClaim;
+
+	public static void deleteConfig() { // i promise you this is important
+		if (new File(CFG_FILE_PATH).delete()) {
+			saveandloadConfig();
+		} else {
+			saveandloadConfig();
+		}
+	}
+
+
+	public static void saveandloadConfig() { // saves and loads
 		Toml toml = new Toml()
-			.addEntry("cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", "100 * x")
-			.addEntry("maxClaims", "Max claims a user is allowed to have. 0 = no limit", 25)
-			.addEntry("refundRatio", "Amount refunded (1.0 = 100%)", 0.75f)
-			.addEntry("OPRefundRatio", "Amount refunded when an admin claims from a player (1.0 = 100%)", 1.0f)
-			.addEntry("notifyOPClaim", "Notify a player when an admin claims their chunk", false);
-
+			.addEntry("cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", costEquation)
+			.addEntry("maxClaims", "Max claims a user is allowed to have. 0 = no limit", maxClaims)
+			.addEntry("refundRatio", "Amount refunded (1.0 = 100%)", refundRatio)
+			.addEntry("OPRefundRatio", "Amount refunded when an admin claims from a player (1.0 = 100%)", adminRefundRatio)
+			.addEntry("notifyOPClaim", "Notify a player when an admin claims their chunk", notifyOPClaim);
 
 		CONFIG = new TomlConfigHandler(MOD_ID, toml);
 
@@ -45,14 +56,7 @@ public class LusiiClaimChunks implements ModInitializer {
 		refundRatio = CONFIG.getFloat("refundRatio");
 		adminRefundRatio = CONFIG.getFloat("OPRefundRatio");
 		notifyOPClaim = CONFIG.getBoolean("notifyOPClaim");
-
-		License.iConfirmNonCommercialUse("UselessBullets");
 	}
-	private static String costEquation;
-	public static int maxClaims;
-	public static float refundRatio;
-	public static float adminRefundRatio;
-	public static boolean notifyOPClaim;
 
 	public static int getCost(String username){
 		Argument x = new Argument("x = " + claimedChunksMap.getOrDefault(username, 0));
@@ -66,7 +70,7 @@ public class LusiiClaimChunks implements ModInitializer {
 		return (int) (refundRatio * (float) lastChunkCost);
 	}
 
-	public static int getFullRefund(int ownedChunks) { // Don't ever talk to me or son ever again
+	public static int getFullRefund(int ownedChunks) {
 		int totalRefund = 0;
 
 		for (int i = 0; i < ownedChunks; i++) {
@@ -88,6 +92,29 @@ public class LusiiClaimChunks implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		if (new File(CFG_FILE_PATH).exists()) {
+			saveandloadConfig();
+		} else {
+			Toml toml = new Toml()
+				.addEntry("cost", "Cost per chunk (In points), parameter x being the number of chunks already claimed by the player", "100 * x")
+				.addEntry("maxClaims", "Max claims a user is allowed to have. 0 = no limit", 25)
+				.addEntry("refundRatio", "Amount refunded (1.0 = 100%)", 0.75f)
+				.addEntry("OPRefundRatio", "Amount refunded when an admin claims from a player (1.0 = 100%)", 1.0f)
+				.addEntry("notifyOPClaim", "Notify a player when an admin claims their chunk", false);
+
+
+			CONFIG = new TomlConfigHandler(MOD_ID, toml);
+
+			costEquation = CONFIG.getString("cost");
+			maxClaims = CONFIG.getInt("maxClaims");
+			refundRatio = CONFIG.getFloat("refundRatio");
+			adminRefundRatio = CONFIG.getFloat("OPRefundRatio");
+			notifyOPClaim = CONFIG.getBoolean("notifyOPClaim");
+
+			License.iConfirmNonCommercialUse("UselessBullets");
+		}
+
+
 
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("LusiiChunksClaim.ser"))) {
 			HashMap<IntPair, List<String>> reopenedMap = (HashMap<IntPair, List<String>>) ois.readObject();

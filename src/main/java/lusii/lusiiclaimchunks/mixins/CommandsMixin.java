@@ -31,5 +31,6 @@ public final class CommandsMixin {
 			commands.add(new ListClaims());
 			commands.add(new TrustAllCommand());
 			commands.add(new UnTrustAllCommand());
+			commands.add(new SettingsCommand());
 	}
 }
